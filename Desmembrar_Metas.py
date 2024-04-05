@@ -1,7 +1,7 @@
 import pandas as pd
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
-from openpyxl.utils import get_column_letter
+from openpyxl.utils import get_column_letter, column_index_from_string
 import tkinter as tk
 from tkinter import filedialog
 
@@ -21,8 +21,8 @@ def selecionar_arquivo():
 # Função principal para processar o arquivo Excel
 def processar_arquivo(arquivo):
     # Carregamento dos dados das planilhas originais
-    Meta_Original1 = pd.read_excel(arquivo, sheet_name=0, skiprows=1, nrows=16, usecols='A:L')
-    Meta_Original2 = pd.read_excel(arquivo, sheet_name=1, skiprows=3, nrows=17, usecols='A:AH')
+    Meta_Original1 = pd.read_excel(arquivo, sheet_name=0, skiprows=1, nrows=16, usecols='A:H, J:L')
+    Meta_Original2 = pd.read_excel(arquivo, sheet_name=1, skiprows=2, nrows=17, usecols='A:AH')
     # Agrupamento dos dados da folha 2 pela coluna 'Cód. Loja'
     grupos_loja = Meta_Original2.groupby('Cód. Loja')
     # Iteração sobre os grupos e criação de uma planilha para cada loja (folha 2)
@@ -64,7 +64,11 @@ def criar_planilha_para_loja(Meta_Geral, Meta_Diarizada, codigo_loja):
             for col_name, value in row.items():
                 row_data.append(value)  # Adiciona o valor da linha 5
                 row_data.append("")  # Adiciona um espaço em branco
-            #ws1.append(row_data)  # Adiciona os valores em uma nova linha
+    
+    # Define a largura das colunas de A a L
+    for col_idx in range(1, 13):  # Colunas de A a L
+        col_letter = get_column_letter(col_idx)
+        ws1.column_dimensions[col_letter].width = 15  # Define a largura desejada
 
     # Centraliza todas as células
     for row in ws1.iter_rows():
