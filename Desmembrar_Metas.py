@@ -1,7 +1,7 @@
 import pandas as pd
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
-from openpyxl.utils import get_column_letter, column_index_from_string
+from openpyxl.utils import get_column_letter
 import tkinter as tk
 from tkinter import filedialog
 
@@ -22,7 +22,7 @@ def selecionar_arquivo():
 def processar_arquivo(arquivo):
     # Carregamento dos dados das planilhas originais
     Meta_Original1 = pd.read_excel(arquivo, sheet_name=0, skiprows=1, nrows=16, usecols='A:H, J:L')
-    Meta_Original2 = pd.read_excel(arquivo, sheet_name=1, skiprows=2, nrows=17, usecols='A:AH')
+    Meta_Original2 = pd.read_excel(arquivo, sheet_name=1, skiprows=2, nrows=17, usecols='A:AI')
     # Agrupamento dos dados da folha 2 pela coluna 'Cód. Loja'
     grupos_loja = Meta_Original2.groupby('Cód. Loja')
     # Iteração sobre os grupos e criação de uma planilha para cada loja (folha 2)
@@ -49,7 +49,11 @@ def criar_planilha_para_loja(Meta_Geral, Meta_Diarizada, codigo_loja):
     for _, row in Meta_Geral.iterrows():
         if row['Cód. NOVO'] == codigo_loja:
             ws1.append(row.tolist())  # Adiciona dados da folha 1
-    
+            ws1['G2'].number_format = 'R$ ###,###' #Meta Receita Líquida
+            ws1['I2'].number_format = '#.##' #Itens/Boleto
+            ws1['J2'].number_format = '##.##' #Preço Médio
+            ws1['K2'].number_format = '###.##' #Boleto Médio
+
     # Adiciona uma linha em branco
     ws1.append([])
 
@@ -65,16 +69,22 @@ def criar_planilha_para_loja(Meta_Geral, Meta_Diarizada, codigo_loja):
                 row_data.append(value)  # Adiciona o valor da linha 5
                 row_data.append("")  # Adiciona um espaço em branco
     
+    # Formatando a meta diarizada em Real (R$)
+    cells = ws1['B7':'B38']
+    for row in cells:
+        for cell in row:
+            cell.number_format = 'R$ ##,###'
+    
     # Define a largura das colunas de A a L
     for col_idx in range(1, 13):  # Colunas de A a L
         col_letter = get_column_letter(col_idx)
-        ws1.column_dimensions[col_letter].width = 15  # Define a largura desejada
+        ws1.column_dimensions[col_letter].width = 23  # Define a largura desejada
 
     # Centraliza todas as células
     for row in ws1.iter_rows():
         for cell in row:
             cell.alignment = Alignment(horizontal='center', vertical='center')
-
+    
     # Salva a planilha
     wb.save(f'Meta_Loja_{codigo_loja}.xlsx')
 
